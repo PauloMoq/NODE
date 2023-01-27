@@ -6,8 +6,25 @@ app.use('/', (req, res, next) => {
     let date = new Date().toISOString();
     console.log("["+date+"]: "+req.url);
     next();
-
 })
+
+const metrics = {
+    requestsCount: {},
+    status: "healthy",
+  };
+  
+  app.get("/metrics", function (req, res, next) {
+    metrics.uptime = `${process.uptime().toFixed(2)} seconds`;
+    return res.json(metrics);  
+  });
+  
+  app.use(function (req, res, next) {
+    const currentUrlRequestsCount = metrics.requestsCount[req.url];
+    metrics.requestsCount[req.url] = currentUrlRequestsCount
+      ? currentUrlRequestsCount + 1
+      : 1;
+    return next();
+  });
 
 app.get("/welcome", (req,  res, next)=>{
     res.send("Bienvenue sur le TP1");
